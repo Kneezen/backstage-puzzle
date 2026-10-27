@@ -104,7 +104,7 @@ button:focus-visible { outline: 3px solid var(--spot); outline-offset: 3px; }
 .icon-btn:hover { border-color: var(--muted); }
 
 /* Programme (act tabs) */
-.programme { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.programme { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
 .act-tab {
   text-align: left;
   background: var(--night-2);
@@ -273,6 +273,19 @@ button:focus-visible { outline: 3px solid var(--spot); outline-offset: 3px; }
 .opt.wrong { background: var(--bad); border-color: var(--bad); color: #fff; opacity: 1; }
 .explain { margin-top: 14px; font-size: 19px; background: var(--paper); color: var(--ink); padding: 8px 14px; border-radius: 10px; }
 
+/* Act 4: when or while */
+.rules { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-bottom: 18px; }
+.rule { background: var(--night); border: 2px solid var(--line); border-radius: 12px; padding: 10px 16px; font-size: 18px; font-weight: 700; }
+.rule b { font-family: var(--display); font-weight: 400; font-size: 24px; margin-right: 4px; }
+.rule span { display: block; color: var(--muted); font-size: 15px; font-weight: 600; }
+.rule.when { border-color: var(--ps); }
+.rule.when b { color: var(--ps); }
+.rule.while { border-color: var(--pc); }
+.rule.while b { color: var(--pc); }
+.ww-opts .opt { font-family: var(--display); font-weight: 400; font-size: 28px; padding: 12px 40px; }
+.timeline { display: block; width: 100%; max-width: 520px; height: auto; margin: 4px 0 6px; }
+@media (max-width: 560px) { .rules { grid-template-columns: minmax(0, 1fr); } }
+
 /* Shared */
 .next-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: center; margin-top: 18px; }
 .cta {
@@ -371,13 +384,14 @@ button:focus-visible { outline: 3px solid var(--spot); outline-offset: 3px; }
   <div class="c r"></div>
   <div class="card" id="curtainCard">
     <h2>Backstage Puzzle</h2>
-    <p>Four acts, one big show. Match pictures, build sentences, find pairs and answer the quiz!</p>
-    <p class="tr">Dört perde, tek büyük gösteri. Resimleri eşleştir, cümle kur, eşleri bul ve soruları cevapla!</p>
+    <p>Five acts, one big show. Match pictures, build sentences, find pairs, choose when or while and answer the quiz!</p>
+    <p class="tr">Beş perde, tek büyük gösteri. Resimleri eşleştir, cümle kur, eşleri bul, when ya da while seç ve soruları cevapla!</p>
     <ul class="acts">
       <li><b>Act 1</b>Picture Match</li>
       <li><b>Act 2</b>Sentence Puzzle</li>
       <li><b>Act 3</b>Memory: <i>have</i> expressions</li>
-      <li><b>Act 4</b>Quick Quiz</li>
+      <li><b>Act 4</b>When or While?</li>
+      <li><b>Act 5</b>Quick Quiz</li>
     </ul>
     <div class="row">
       <button class="cta" id="startTeams">Play with 2 teams</button>
@@ -594,11 +608,12 @@ const ACTS = [
   { name: 'Picture Match', render: actPictures },
   { name: 'Sentence Puzzle', render: actPuzzle },
   { name: 'Memory: have', render: actMemory },
+  { name: 'When or While?', render: actWhenWhile },
   { name: 'Quick Quiz', render: actQuiz },
 ];
 
 /* ---------- state ---------- */
-const state = { mode: 'teams', scores: [0, 0], active: 0, act: 0, done: [false, false, false, false] };
+const state = { mode: 'teams', scores: [0, 0], active: 0, act: 0, done: [false, false, false, false, false] };
 const TEAMS = ['Team Masks', 'Team Props'];
 
 /* ---------- sound ---------- */
@@ -835,12 +850,76 @@ function actMemory(root) {
   });
 }
 
-/* ---------- Act 4: quiz ---------- */
+/* ---------- Act 4: when or while ---------- */
+// School rule: while + past continuous (long action), when + past simple (short action).
+// `both`: two long actions at the same time.
+const WW = [
+  { s: 'Everybody [was looking] for their props ___ the scenery {fell}.', a: 'when', long: 'Everybody was looking for their props', short: 'The scenery fell' },
+  { s: '___ everybody [was looking] for their props, the scenery {fell}.', a: 'while', long: 'Everybody was looking for their props', short: 'The scenery fell' },
+  { s: 'Tara {had} a terrible dream ___ she [was sleeping].', a: 'while', long: 'Tara was sleeping', short: 'She had a terrible dream' },
+  { s: 'The scenery {fell} ___ everybody [was looking] for their props.', a: 'while', long: 'Everybody was looking for their props', short: 'The scenery fell' },
+  { s: '___ the scenery {fell}, everybody [was looking] for their props.', a: 'when', long: 'Everybody was looking for their props', short: 'The scenery fell' },
+  { s: 'In the dream, Cody [was looking] for his sword ___ he {saw} the scenery moving.', a: 'when', long: 'Cody was looking for his sword', short: 'He saw the scenery moving' },
+  { s: '___ Elsa [was looking] for her make-up, Carlos [was looking] for his costume.', a: 'while', both: ['Elsa was looking for her make-up', 'Carlos was looking for his costume'] },
+  { s: 'Carlos [was shouting] "Find my costume!" ___ Cody [was looking] for his sword.', a: 'while', both: ['Carlos was shouting "Find my costume!"', 'Cody was looking for his sword'] },
+];
+const cap = (w) => w[0].toUpperCase() + w.slice(1);
+function timeline(q) {
+  const label = (x, y, txt) => `<text x="${x}" y="${y}" text-anchor="middle" style="fill:var(--ink)" font-size="14" font-weight="700" font-family="Baloo 2, Trebuchet MS, sans-serif">${txt}</text>`;
+  const bar = (y, txt) => `<rect x="20" y="${y}" width="480" height="16" rx="8" style="fill:var(--pc)"/>${label(260, y - 6, txt)}`;
+  const inner = q.both
+    ? bar(28, q.both[0]) + bar(74, q.both[1])
+    : bar(28, q.long) + `<line x1="330" y1="24" x2="330" y2="54" style="stroke:var(--ps)" stroke-width="5" stroke-linecap="round"/><circle cx="330" cy="36" r="8" style="fill:var(--ps)"/>${label(330, 78, q.short)}`;
+  return `<svg class="timeline" viewBox="0 0 520 96" aria-hidden="true">${inner}</svg>`;
+}
+function actWhenWhile(root) {
+  let i = 0, right = 0;
+  const RULES = `<div class="rules">
+      <div class="rule when"><b>when</b> + past simple<span>short action · kısa, ani olay</span></div>
+      <div class="rule while"><b>while</b> + past continuous<span>long action · uzun süren olay</span></div>
+    </div>`;
+  const draw = () => {
+    const q = WW[i], start = q.s.startsWith('___');
+    const word = (w) => start ? cap(w) : w;
+    root.innerHTML = head(3, 'When or While?', 'Choose <i>when</i> or <i>while</i> to complete the sentence.', 'Cümleyi tamamlamak için <i>when</i> ya da <i>while</i> seç.', WW.length)
+      + RULES
+      + `<p class="qtext">${plain(q.s).replace('___', '<span class="blank">?</span>')}</p>
+        <div class="options ww-opts">${['when', 'while'].map(w => `<button class="opt" data-w="${w}">${word(w)}</button>`).join('')}</div>
+        <div class="explain" hidden></div>
+        <p class="feedback" aria-live="polite"></p>
+        <div class="next-row" hidden><button class="cta">${i === WW.length - 1 ? 'Finish' : 'Next sentence →'}</button></div>`;
+    $('.n', root).textContent = i + 1;
+    root.querySelectorAll('.opt').forEach(b => b.onclick = () => {
+      const ok = b.dataset.w === q.a;
+      root.querySelectorAll('.opt').forEach(x => { x.disabled = true; if (x.dataset.w === q.a) x.classList.add('right'); });
+      if (!ok) { b.classList.add('wrong'); shake(b); }
+      attempt(ok); if (ok) right++;
+      $('.qtext', root).innerHTML = fmt(q.s).replace('___', `<span class="blank">${word(q.a)}</span>`);
+      say(root, ok ? praise() : 'Oops! Look at the timeline.', ok ? 'good' : 'bad');
+      const why = q.both
+        ? '<b>while</b>: two long actions at the same time · aynı anda süren iki uzun olay'
+        : (q.a === 'when' ? '<b>when</b> + short action (past simple)' : '<b>while</b> + long action (past continuous)');
+      const ex = $('.explain', root);
+      ex.innerHTML = `${timeline(q)}<span class="why">${why}</span>`; ex.hidden = false;
+      const nx = $('.next-row', root); nx.hidden = false;
+      $('.cta', nx).onclick = () => {
+        if (++i < WW.length) return draw();
+        root.innerHTML = head(3, 'When or While?', `You got ${right} out of ${WW.length} right.`, `${WW.length} cümleden ${right} doğru.`, WW.length) + RULES;
+        $('.n', root).textContent = WW.length;
+        finishAct(root, 3);
+      };
+      $('.cta', nx).focus();
+    });
+  };
+  draw();
+}
+
+/* ---------- Act 5: quiz ---------- */
 function actQuiz(root) {
   let i = 0, right = 0;
   const draw = () => {
     const q = QUIZ[i];
-    root.innerHTML = head(3, 'Quick Quiz', 'Choose the right answer.', 'Doğru cevabı seç.', QUIZ.length)
+    root.innerHTML = head(4, 'Quick Quiz', 'Choose the right answer.', 'Doğru cevabı seç.', QUIZ.length)
       + `<div class="quiz ${q.pic ? '' : 'nopic'}">
           ${q.pic ? `<div class="qpic">${SVG[q.pic]}</div>` : ''}
           <div>
@@ -863,9 +942,9 @@ function actQuiz(root) {
       const nx = $('.next-row', root); nx.hidden = false;
       $('.cta', nx).onclick = () => {
         if (++i < QUIZ.length) return draw();
-        root.innerHTML = head(3, 'Quick Quiz', `You got ${right} out of ${QUIZ.length} right.`, `${QUIZ.length} sorudan ${right} doğru.`, QUIZ.length);
+        root.innerHTML = head(4, 'Quick Quiz', `You got ${right} out of ${QUIZ.length} right.`, `${QUIZ.length} sorudan ${right} doğru.`, QUIZ.length);
         $('.n', root).textContent = QUIZ.length;
-        finishAct(root, 3);
+        finishAct(root, 4);
       };
       $('.cta', nx).focus();
     });
@@ -881,7 +960,7 @@ function openCurtain() {
 }
 function begin(mode) {
   try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { ac = null; }
-  state.mode = mode; state.scores = [0, 0]; state.active = 0; state.done = [false, false, false, false];
+  state.mode = mode; state.scores = [0, 0]; state.active = 0; state.done = ACTS.map(() => false);
   renderScores(); showAct(0); openCurtain();
 }
 $('#startTeams').onclick = () => begin('teams');
