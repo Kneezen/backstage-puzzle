@@ -274,6 +274,7 @@ button:focus-visible { outline: 3px solid var(--spot); outline-offset: 3px; }
 .explain { margin-top: 14px; font-size: 19px; background: var(--paper); color: var(--ink); padding: 8px 14px; border-radius: 10px; }
 
 /* Act 4: when or while */
+.explain { --tl-muted: #6b5872; }
 .rules { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-bottom: 18px; }
 .rule { background: var(--night); border: 2px solid var(--line); border-radius: 12px; padding: 10px 16px; font-size: 18px; font-weight: 700; }
 .rule b { font-family: var(--display); font-weight: 400; font-size: 24px; margin-right: 4px; }
@@ -283,7 +284,8 @@ button:focus-visible { outline: 3px solid var(--spot); outline-offset: 3px; }
 .rule.while { border-color: var(--pc); }
 .rule.while b { color: var(--pc); }
 .ww-opts .opt { font-family: var(--display); font-weight: 400; font-size: 28px; padding: 12px 40px; }
-.timeline { display: block; width: 100%; max-width: 520px; height: auto; margin: 4px 0 6px; }
+.timeline { display: block; width: 100%; max-width: 700px; height: auto; margin: 4px 0 6px; }
+.explain .why { font-size: 17px; }
 @media (max-width: 560px) { .rules { grid-template-columns: minmax(0, 1fr); } }
 
 /* Shared */
@@ -859,17 +861,36 @@ const WW = [
   { s: 'The scenery {fell} ___ everybody [was looking] for their props.', a: 'while', long: 'Everybody was looking for their props', short: 'The scenery fell' },
   { s: '___ the scenery {fell}, everybody [was looking] for their props.', a: 'when', long: 'Everybody was looking for their props', short: 'The scenery fell' },
   { s: 'In the dream, Cody [was looking] for his sword ___ he {saw} the scenery moving.', a: 'when', long: 'Cody was looking for his sword', short: 'He saw the scenery moving' },
-  { s: '___ Elsa [was looking] for her make-up, Carlos [was looking] for his costume.', a: 'while', both: ['Elsa was looking for her make-up', 'Carlos was looking for his costume'] },
-  { s: 'Carlos [was shouting] "Find my costume!" ___ Cody [was looking] for his sword.', a: 'while', both: ['Carlos was shouting "Find my costume!"', 'Cody was looking for his sword'] },
+  { s: '___ Elsa [was looking] for her make-up, Carlos [was looking] for his costume.', a: 'while', wi: 0, both: ['Elsa was looking for her make-up', 'Carlos was looking for his costume'] },
+  { s: 'Carlos [was shouting] "Find my costume!" ___ Cody [was looking] for his sword.', a: 'while', wi: 1, both: ['Carlos was shouting "Find my costume!"', 'Cody was looking for his sword'] },
 ];
 const cap = (w) => w[0].toUpperCase() + w.slice(1);
+// The long action is a bar, the short action is a dot on it; the when/while word is a tag on its own clause.
 function timeline(q) {
-  const label = (x, y, txt) => `<text x="${x}" y="${y}" text-anchor="middle" style="fill:var(--ink)" font-size="14" font-weight="700" font-family="Baloo 2, Trebuchet MS, sans-serif">${txt}</text>`;
-  const bar = (y, txt) => `<rect x="20" y="${y}" width="480" height="16" rx="8" style="fill:var(--pc)"/>${label(260, y - 6, txt)}`;
-  const inner = q.both
-    ? bar(28, q.both[0]) + bar(74, q.both[1])
-    : bar(28, q.long) + `<line x1="330" y1="24" x2="330" y2="54" style="stroke:var(--ps)" stroke-width="5" stroke-linecap="round"/><circle cx="330" cy="36" r="8" style="fill:var(--ps)"/>${label(330, 78, q.short)}`;
-  return `<svg class="timeline" viewBox="0 0 520 96" aria-hidden="true">${inner}</svg>`;
+  const T = (x, y, txt, fill = 'var(--ink)', size = 15, weight = 700) =>
+    `<text x="${x}" y="${y}" style="fill:${fill}" font-size="${size}" font-weight="${weight}" font-family="Baloo 2, Trebuchet MS, sans-serif">${txt}</text>`;
+  const clause = (x, y, txt, word, col) => {
+    if (!word) return T(x, y, txt, col);
+    const w = word.length * 9 + 18;
+    return `<rect x="${x}" y="${y - 15}" width="${w}" height="21" rx="10.5" style="fill:${col}"/>`
+      + `<text x="${x + w / 2}" y="${y}" text-anchor="middle" fill="#fff" font-size="14" font-weight="800" font-family="Baloo 2, Trebuchet MS, sans-serif">${word}</text>`
+      + T(x + w + 8, y, txt, col);
+  };
+  const tag = (x, y, txt) => T(x, y, txt, 'var(--tl-muted)', 13, 600);
+  const bar = (y) => `<rect x="30" y="${y}" width="470" height="18" rx="9" style="fill:var(--pc)"/>`;
+  const axis = (y) => `<line x1="30" y1="${y}" x2="500" y2="${y}" style="stroke:var(--tl-muted)" stroke-width="2"/>`
+    + `<path d="M500 ${y - 5} L510 ${y} L500 ${y + 5}Z" style="fill:var(--tl-muted)"/>${tag(516, y + 4, 'time')}`;
+  if (q.both) {
+    const inner = clause(30, 30, q.both[0], q.wi === 0 && 'while', 'var(--pc)') + tag(30, 48, 'past continuous · a long action in progress') + bar(56)
+      + clause(30, 100, q.both[1], q.wi === 1 && 'while', 'var(--pc)') + tag(30, 118, 'past continuous · a long action in progress') + bar(126)
+      + `<path d="M30 52 V150 M500 52 V150" style="stroke:var(--tl-muted)" stroke-width="1.5" stroke-dasharray="4 4"/>` + axis(158);
+    return `<svg class="timeline" viewBox="0 0 560 172" aria-hidden="true">${inner}</svg>`;
+  }
+  const inner = clause(30, 30, q.long, q.a === 'while' && 'while', 'var(--pc)') + tag(30, 48, 'past continuous · a long action in progress') + bar(60)
+    + `<line x1="280" y1="54" x2="280" y2="92" style="stroke:var(--ps)" stroke-width="5" stroke-linecap="round"/><circle cx="280" cy="69" r="9" style="fill:var(--ps)"/>`
+    + clause(250, 114, q.short, q.a === 'when' && 'when', 'var(--ps)') + tag(250, 132, 'past simple · a short action')
+    + axis(152);
+  return `<svg class="timeline" viewBox="0 0 560 166" aria-hidden="true">${inner}</svg>`;
 }
 function actWhenWhile(root) {
   let i = 0, right = 0;
@@ -896,8 +917,10 @@ function actWhenWhile(root) {
       $('.qtext', root).innerHTML = fmt(q.s).replace('___', `<span class="blank">${word(q.a)}</span>`);
       say(root, ok ? praise() : 'Oops! Look at the timeline.', ok ? 'good' : 'bad');
       const why = q.both
-        ? '<b>while</b>: two long actions at the same time'
-        : (q.a === 'when' ? '<b>when</b> + short action (past simple)' : '<b>while</b> + long action (past continuous)');
+        ? 'Both actions were in progress at the same time, so we use <b>while</b>.'
+        : (q.a === 'when'
+          ? 'The short action happened in the middle of the long action. <b>when</b> goes before the short action.'
+          : 'The long action was in progress. <b>while</b> goes before the long action.');
       const ex = $('.explain', root);
       ex.innerHTML = `${timeline(q)}<span class="why">${why}</span>`; ex.hidden = false;
       const nx = $('.next-row', root); nx.hidden = false;
