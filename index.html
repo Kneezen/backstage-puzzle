@@ -385,7 +385,6 @@ button:focus-visible { outline: 3px solid var(--spot); outline-offset: 3px; }
   <div class="card" id="curtainCard">
     <h2>Backstage Puzzle</h2>
     <p>Five acts, one big show. Match pictures, build sentences, find pairs, choose when or while and answer the quiz!</p>
-    <p class="tr">Beş perde, tek büyük gösteri. Resimleri eşleştir, cümle kur, eşleri bul, when ya da while seç ve soruları cevapla!</p>
     <ul class="acts">
       <li><b>Act 1</b>Picture Match</li>
       <li><b>Act 2</b>Sentence Puzzle</li>
@@ -592,16 +591,16 @@ const HAVE = [
   { id: 'badtime', word: 'have a bad time' },
 ];
 const QUIZ = [
-  { pic: 'costume', q: 'In Tara\'s dream, Carlos ___ for his costume.', opts: ['was looking', 'were looking', 'looks'], full: 'In Tara\'s dream, Carlos [was looking] for his costume.', tr: 'Rüyada devam eden eylem → was/were + -ing' },
-  { pic: 'team', q: 'Everybody ___ Tara yesterday.', opts: ['was helping', 'were helping', 'is helping'], full: 'Everybody [was helping] Tara yesterday.', tr: 'Everybody tekil sayılır → was' },
-  { pic: 'sleep', q: 'Tara ___ when she had a terrible dream.', opts: ['was sleeping', 'were sleeping', 'sleeps'], full: 'Tara [was sleeping] when she {had} a terrible dream.', tr: 'Tara tek kişi → was' },
-  { pic: 'fall', q: 'Everybody was looking for their props when the scenery ___.', opts: ['fell', 'was falling', 'falls'], full: 'Everybody [was looking] for their props when the scenery {fell}.', tr: 'fall → fell' },
-  { q: 'Cody: "We ___ all there helping you yesterday. Remember?"', opts: ['were', 'was', 'did'], full: 'We [were] all there [helping] you yesterday. Remember?', tr: 'we → were' },
-  { pic: 'sleep', q: 'Tara: "I ___ a terrible dream!"', opts: ['had', 'have', 'has'], full: 'I {had} a terrible dream!', tr: 'have a dream → geçmişte: had a dream' },
-  { q: 'Tara: "I think it\'s great because we ___ as a team!"', opts: ['worked', 'work', 'were work'], full: 'I think it\'s great because we {worked} as a team!', tr: 'work → worked' },
-  { q: 'Elsa: "Hey, Tara! ___ You look tired."', opts: ['Are you OK?', 'It\'s a mess!', 'Everything\'s fine!'], full: 'Hey, Tara! Are you OK? You look tired.', tr: 'Elsa, Tara\'nın yorgun göründüğünü fark ediyor.' },
-  { q: 'Tara: "Everybody was looking for their props and their costumes when the scenery fell! It was a ___!"', opts: ['mess', 'team', 'dream'], full: 'Everybody [was looking] for their props and their costumes when the scenery {fell}! It was a mess!', tr: 'Her şey karmakarışıktı.' },
-  { q: 'Cody: "Don\'t worry, Tara! ___"', opts: ['Everything\'s fine!', 'It\'s a mess!', 'I\'m not sure...'], full: 'Don\'t worry, Tara! Everything\'s fine!', tr: 'Cody, Tara\'yı rahatlatıyor.' },
+  { pic: 'costume', q: 'In Tara\'s dream, Carlos ___ for his costume.', opts: ['was looking', 'were looking', 'looks'], full: 'In Tara\'s dream, Carlos [was looking] for his costume.', hint: 'An action in progress in the dream → was/were + -ing' },
+  { pic: 'team', q: 'Everybody ___ Tara yesterday.', opts: ['was helping', 'were helping', 'is helping'], full: 'Everybody [was helping] Tara yesterday.', hint: 'Everybody is singular → was' },
+  { pic: 'sleep', q: 'Tara ___ when she had a terrible dream.', opts: ['was sleeping', 'were sleeping', 'sleeps'], full: 'Tara [was sleeping] when she {had} a terrible dream.', hint: 'Tara is one person → was' },
+  { pic: 'fall', q: 'Everybody was looking for their props when the scenery ___.', opts: ['fell', 'was falling', 'falls'], full: 'Everybody [was looking] for their props when the scenery {fell}.', hint: 'fall → fell (irregular verb)' },
+  { q: 'Cody: "We ___ all there helping you yesterday. Remember?"', opts: ['were', 'was', 'did'], full: 'We [were] all there [helping] you yesterday. Remember?', hint: 'we → were' },
+  { pic: 'sleep', q: 'Tara: "I ___ a terrible dream!"', opts: ['had', 'have', 'has'], full: 'I {had} a terrible dream!', hint: 'have a dream → in the past: had a dream' },
+  { q: 'Tara: "I think it\'s great because we ___ as a team!"', opts: ['worked', 'work', 'were work'], full: 'I think it\'s great because we {worked} as a team!', hint: 'work → worked' },
+  { q: 'Elsa: "Hey, Tara! ___ You look tired."', opts: ['Are you OK?', 'It\'s a mess!', 'Everything\'s fine!'], full: 'Hey, Tara! Are you OK? You look tired.', hint: 'Elsa sees that Tara looks tired.' },
+  { q: 'Tara: "Everybody was looking for their props and their costumes when the scenery fell! It was a ___!"', opts: ['mess', 'team', 'dream'], full: 'Everybody [was looking] for their props and their costumes when the scenery {fell}! It was a mess!', hint: 'Everything was in a mess.' },
+  { q: 'Cody: "Don\'t worry, Tara! ___"', opts: ['Everything\'s fine!', 'It\'s a mess!', 'I\'m not sure...'], full: 'Don\'t worry, Tara! Everything\'s fine!', hint: 'Cody wants Tara to feel better.' },
 ];
 
 const ACTS = [
@@ -692,9 +691,9 @@ function showAct(i) {
   $('#stage').replaceChildren(root);
   ACTS[i].render(root);
 }
-function head(i, title, how, tr, total) {
+function head(i, title, how, total) {
   return `<div class="act-head">
-      <div><h2><small>Act ${i + 1}</small>${title}</h2><p class="how">${how}<span class="tr">${tr}</span></p></div>
+      <div><h2><small>Act ${i + 1}</small>${title}</h2><p class="how">${how}</p></div>
       <div class="progress"><span class="n">0</span> / ${total}</div>
     </div>`;
 }
@@ -711,7 +710,7 @@ function finishAct(root, i) {
 
 /* ---------- Act 1: picture match ---------- */
 function actPictures(root) {
-  root.innerHTML = head(0, 'Picture Match', 'Pick a picture, then pick the sentence that tells its story.', 'Bir resim seç, sonra o resmi anlatan cümleyi seç.', SCENES.length)
+  root.innerHTML = head(0, 'Picture Match', 'Pick a picture, then pick the sentence that tells its story.', SCENES.length)
     + `<div class="match-layout">
         <div class="pic-grid">${shuffle(SCENES).map((s, k) => `
           <button class="pic-card" data-id="${s.id}" aria-label="Picture ${k + 1}">${SVG[s.id]}<span class="slot"><span class="q">?</span></span></button>`).join('')}</div>
@@ -758,7 +757,7 @@ function actPictures(root) {
 
 /* ---------- Act 2: sentence puzzle ---------- */
 function actPuzzle(root) {
-  root.innerHTML = head(1, 'Sentence Puzzle', 'Join the two puzzle pieces to rebuild the sentences from the story.', 'İki yapboz parçasını birleştirip hikâyedeki cümleleri yeniden kur.', PAIRS.length)
+  root.innerHTML = head(1, 'Sentence Puzzle', 'Join the two puzzle pieces to rebuild the sentences from the story.', PAIRS.length)
     + LEGEND
     + `<div class="built"></div>
       <div class="puzzle">
@@ -792,7 +791,7 @@ function actPuzzle(root) {
 /* ---------- Act 3: memory ---------- */
 function actMemory(root) {
   const cards = shuffle(HAVE.flatMap(h => [{ id: h.id, kind: 'pic' }, { id: h.id, kind: 'word' }]));
-  root.innerHTML = head(2, 'Memory: <i>have</i> expressions', 'Turn over two cards. Find a picture and its <i>have</i> expression.', 'İki kart aç. Resmi ve ona uyan <i>have</i> ifadesini bul.', HAVE.length)
+  root.innerHTML = head(2, 'Memory: <i>have</i> expressions', 'Turn over two cards. Find a picture and its <i>have</i> expression.', HAVE.length)
     + `<div class="memory">${cards.map((c, k) => `
         <button class="mcard" data-id="${c.id}" aria-label="Card ${k + 1}">
           <span class="inner">
@@ -805,7 +804,7 @@ function actMemory(root) {
   // The teacher starts a 15-second look at every card; then they turn over and the game begins.
   const all = root.querySelectorAll('.mcard');
   root.querySelector('.memory').insertAdjacentHTML('beforebegin',
-    `<div class="peek"><button class="cta" id="peekStart">Show the cards: 15 seconds</button><span class="tr">Kartları 15 saniye göstermek için bas.</span></div>`);
+    `<div class="peek"><button class="cta" id="peekStart">Show the cards: 15 seconds</button></div>`);
   let secs = 15, timer = 0;
   const endPeek = () => {
     clearInterval(timer);
@@ -817,7 +816,7 @@ function actMemory(root) {
   $('#peekStart', root).onclick = () => {
     all.forEach(b => b.classList.add('up'));
     sfx.flip();
-    $('.peek', root).innerHTML = `<span>Memorise the cards! <b class="secs">15</b></span><span class="tr">Kartları aklında tut!</span><button class="cta ghost" id="peekSkip">Start now</button>`;
+    $('.peek', root).innerHTML = `<span>Memorise the cards! <b class="secs">15</b></span><button class="cta ghost" id="peekSkip">Start now</button>`;
     $('#peekSkip', root).onclick = endPeek;
     timer = setInterval(() => {
       if (!root.isConnected) return clearInterval(timer);
@@ -875,13 +874,13 @@ function timeline(q) {
 function actWhenWhile(root) {
   let i = 0, right = 0;
   const RULES = `<div class="rules">
-      <div class="rule when"><b>when</b> + past simple<span>short action · kısa, ani olay</span></div>
-      <div class="rule while"><b>while</b> + past continuous<span>long action · uzun süren olay</span></div>
+      <div class="rule when"><b>when</b> + past simple<span>a short action that happens suddenly</span></div>
+      <div class="rule while"><b>while</b> + past continuous<span>a long action that was in progress</span></div>
     </div>`;
   const draw = () => {
     const q = WW[i], start = q.s.startsWith('___');
     const word = (w) => start ? cap(w) : w;
-    root.innerHTML = head(3, 'When or While?', 'Choose <i>when</i> or <i>while</i> to complete the sentence.', 'Cümleyi tamamlamak için <i>when</i> ya da <i>while</i> seç.', WW.length)
+    root.innerHTML = head(3, 'When or While?', 'Choose <i>when</i> or <i>while</i> to complete the sentence.', WW.length)
       + RULES
       + `<p class="qtext">${plain(q.s).replace('___', '<span class="blank">?</span>')}</p>
         <div class="options ww-opts">${['when', 'while'].map(w => `<button class="opt" data-w="${w}">${word(w)}</button>`).join('')}</div>
@@ -897,14 +896,14 @@ function actWhenWhile(root) {
       $('.qtext', root).innerHTML = fmt(q.s).replace('___', `<span class="blank">${word(q.a)}</span>`);
       say(root, ok ? praise() : 'Oops! Look at the timeline.', ok ? 'good' : 'bad');
       const why = q.both
-        ? '<b>while</b>: two long actions at the same time · aynı anda süren iki uzun olay'
+        ? '<b>while</b>: two long actions at the same time'
         : (q.a === 'when' ? '<b>when</b> + short action (past simple)' : '<b>while</b> + long action (past continuous)');
       const ex = $('.explain', root);
       ex.innerHTML = `${timeline(q)}<span class="why">${why}</span>`; ex.hidden = false;
       const nx = $('.next-row', root); nx.hidden = false;
       $('.cta', nx).onclick = () => {
         if (++i < WW.length) return draw();
-        root.innerHTML = head(3, 'When or While?', `You got ${right} out of ${WW.length} right.`, `${WW.length} cümleden ${right} doğru.`, WW.length) + RULES;
+        root.innerHTML = head(3, 'When or While?', `You got ${right} out of ${WW.length} right.`, WW.length) + RULES;
         $('.n', root).textContent = WW.length;
         finishAct(root, 3);
       };
@@ -919,7 +918,7 @@ function actQuiz(root) {
   let i = 0, right = 0;
   const draw = () => {
     const q = QUIZ[i];
-    root.innerHTML = head(4, 'Quick Quiz', 'Choose the right answer.', 'Doğru cevabı seç.', QUIZ.length)
+    root.innerHTML = head(4, 'Quick Quiz', 'Choose the right answer.', QUIZ.length)
       + `<div class="quiz ${q.pic ? '' : 'nopic'}">
           ${q.pic ? `<div class="qpic">${SVG[q.pic]}</div>` : ''}
           <div>
@@ -938,11 +937,11 @@ function actQuiz(root) {
       attempt(ok); if (ok) right++;
       const blank = $('.blank', root); if (blank) blank.textContent = q.opts[0];
       say(root, ok ? praise() : 'Oops! Look at the green answer.', ok ? 'good' : 'bad');
-      const ex = $('.explain', root); ex.innerHTML = `${fmt(q.full)}<span class="why">${q.tr}</span>`; ex.hidden = false;
+      const ex = $('.explain', root); ex.innerHTML = `${fmt(q.full)}<span class="why">${q.hint}</span>`; ex.hidden = false;
       const nx = $('.next-row', root); nx.hidden = false;
       $('.cta', nx).onclick = () => {
         if (++i < QUIZ.length) return draw();
-        root.innerHTML = head(4, 'Quick Quiz', `You got ${right} out of ${QUIZ.length} right.`, `${QUIZ.length} sorudan ${right} doğru.`, QUIZ.length);
+        root.innerHTML = head(4, 'Quick Quiz', `You got ${right} out of ${QUIZ.length} right.`, QUIZ.length);
         $('.n', root).textContent = QUIZ.length;
         finishAct(root, 4);
       };
@@ -985,7 +984,7 @@ function curtainCall() {
     <h2>${title}</h2>
     ${line}
     <p>You worked as a team. You're the best friends ever!</p>
-    ${missed.length ? `<p class="tr">Not played yet: Act ${missed.join(', Act ')}</p>` : '<p class="tr">Tüm perdeler tamamlandı. Harika iş!</p>'}
+    ${missed.length ? `<p class="tr">Not played yet: Act ${missed.join(', Act ')}</p>` : '<p class="tr">All acts complete. Great work!</p>'}
     <div class="row"><button class="cta" id="againBtn">Play again</button><button class="cta ghost" id="backBtn">Back to the stage</button></div>`;
   curtain.classList.remove('gone');
   void curtain.offsetWidth;
